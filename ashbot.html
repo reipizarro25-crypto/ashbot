@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ashley Bot - Math Helper</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f0f8ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  #chat-container {
+    width: 400px;
+    border: 2px solid #0077cc;
+    border-radius: 10px;
+    background: white;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+  }
+  #chat-box {
+    height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 5px;
+    margin-bottom: 10px;
+  }
+  .message {
+    margin: 5px 0;
+  }
+  .ashley {
+    color: #0077cc;
+    font-weight: bold;
+  }
+  input[type="text"] {
+    width: calc(100% - 50px);
+    padding: 5px;
+  }
+  button {
+    width: 40px;
+    padding: 5px;
+    margin-left: 5px;
+    background: #0077cc;
+    color: white;
+    border: none;
+    border-radius: 5px;
+  }
+</style>
+</head>
+<body>
+<div id="chat-container">
+  <div id="chat-box"></div>
+  <div style="display: flex;">
+    <input type="text" id="user-input" placeholder="Ask me a math question...">
+    <button onclick="sendMessage()">➡️</button>
+  </div>
+</div>
+
+<script>
+  const chatBox = document.getElementById('chat-box');
+
+  function addMessage(sender, text) {
+    const messageDiv = document.createElement('div');
+    messageDiv.classList.add('message');
+    messageDiv.innerHTML = `<span class="${sender}">${sender}:</span> ${text}`;
+    chatBox.appendChild(messageDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  function sendMessage() {
+    const input = document.getElementById('user-input');
+    const userText = input.value;
+    if (!userText) return;
+    addMessage('You', userText);
+    input.value = '';
+    respond(userText);
+  }
+
+  function respond(text) {
+    try {
+      // Basic math evaluation
+      const result = evalMath(text);
+      addMessage('Ashley', `Hmm, the answer is ${result} :3`);
+    } catch {
+      addMessage('Ashley', "Oops, I can't solve that one 😅");
+    }
+  }
+
+  function evalMath(expr) {
+    // Remove unsafe characters
+    if (/[^0-9+\-*/(). %]/.test(expr)) throw 'Invalid characters';
+    // Replace % with /100
+    const safeExpr = expr.replace(/%/g, '/100');
+    return Function('"use strict";return (' + safeExpr + ')')();
+  }
+</script>
+</body>
+</html>
