@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Retro Web OS</title>
+<style>
+:root {
+  --bg-color: #c0c0c0;
+  --window-bg: #e5e5e5;
+  --accent: #000080;
+  --text: #000;
+}
+body {
+  background: var(--bg-color);
+  font-family: Tahoma, Verdana, sans-serif;
+  margin:0;
+  overflow:hidden;
+}
+
+/* Boot Screen */
+#bootScreen {
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  background:#000; color:#0f0;
+  display:flex; flex-direction:column; justify-content:center; align-items:center;
+  font-family: monospace; font-size:20px;
+}
+#bootScreen button { margin:10px; padding:10px 20px; font-size:18px; cursor:pointer; }
+
+/* Taskbar */
+#taskbar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 32px;
+  background: #d4d0c8;
+  border-top:2px solid #fff;
+  display:flex; justify-content: space-between; align-items:center;
+}
+#startBtn { background:linear-gradient(#fff,#e0e0e0); border:2px solid #fff; margin:3px; padding:4px 10px; cursor:pointer; font-size:14px;}
+#clock { margin-right:8px; padding:3px 6px; background:#e6e6e6; border:2px solid #fff; font-size:13px; cursor:pointer; }
+
+/* Start Menu */
+#startMenu { position:fixed; bottom:32px; left:0; width:180px; background:#d4d0c8; border:2px solid #fff; display:none; padding:5px;}
+.startItem { padding:4px; cursor:pointer;}
+.startItem:hover{background:#000080;color:white;}
+
+/* Windows */
+.window { position:absolute; top:100px; left:150px; width:400px; height:auto; background:var(--window-bg); border:2px solid #fff; display:none; resize:both; overflow:auto; }
+.titlebar { background:var(--accent); color:white; padding:4px; cursor:move; font-weight:bold; display:flex; justify-content:space-between; align-items:center; }
+.closeBtn { background:red; color:white; border:none; cursor:pointer; padding:0 5px; font-weight:bold; }
+.content { padding:10px; }
+
+/* Paint */
+#paintCanvas { border:1px solid #000; background:white; }
+
+/* Notepad */
+#notepadText { width:100%; height:200px; }
+
+/* Calculator */
+.calcBtn { width:40px; height:40px; margin:2px; font-size:16px; }
+
+/* Game */
+#gameCanvas { border:1px solid #000; background:#222; display:block; margin:auto; }
+
+/* Terminal */
+#terminalOutput { background:black; color:#0f0; font-family: monospace; height:200px; overflow:auto; padding:5px; }
+#terminalInput { width:100%; }
+</style>
+</head>
+<body>
+
+<!-- Boot Screen -->
+<div id="bootScreen">
+  <div>Retro Web OS Boot</div>
+  <div>Choose your device:</div>
+  <button onclick="bootOS('pc')">PC</button>
+  <button onclick="bootOS('mobile')">Mobile</button>
+</div>
+
+<!-- Taskbar -->
+<div id="taskbar">
+  <button id="startBtn">Start</button>
+  <div id="clock"></div>
+</div>
+
+<!-- Start Menu -->
+<div id="startMenu">
+  <div class="startItem" onclick="openWindow('paintWin')">Paint</div>
+  <div class="startItem" onclick="openWindow('notepadWin')">Notepad</div>
+  <div class="startItem" onclick="openWindow('calcWin')">Calculator</div>
+  <div class="startItem" onclick="openWindow('gameWin')">Game</div>
+  <div class="startItem" onclick="openWindow('terminalWin')">Terminal</div>
+</div>
+
+<!-- Paint Window -->
+<div class="window" id="paintWin">
+  <div class="titlebar">Paint <button class="closeBtn" onclick="closeWindow('paintWin')">X</button></div>
+  <div class="content">
+    <canvas id="paintCanvas" width="350" height="250"></canvas><br>
+    <label>Color: <input type="color" id="paintColor"></label>
+    <label>Brush Size: <input type="number" id="brushSize" value="4" min="1" max="50"></label>
+    <button onclick="brush='draw'">Brush</button>
+    <button onclick="brush='bucket'">Bucket</button>
+  </div>
+</div>
+
+<!-- Notepad Window -->
+<div class="window" id="notepadWin">
+  <div class="titlebar">Notepad <button class="closeBtn" onclick="closeWindow('notepadWin')">X</button></div>
+  <div class="content">
+    <textarea id="notepadText" placeholder="Type here..."></textarea><br>
+    <button onclick="downloadNote()">Save</button>
+  </div>
+</div>
+
+<!-- Calculator Window -->
+<div class="window" id="calcWin">
+  <div class="titlebar">Calculator <button class="closeBtn" onclick="closeWindow('calcWin')">X</button></div>
+  <div class="content">
+    <input type="text" id="calcDisplay" style="width:100%; font-size:16px;"><br>
+    <div id="calcButtons">
+      <button class="calcBtn" onclick="press('7')">7</button>
+      <button class="calcBtn" onclick="press('8')">8</button>
+      <button class="calcBtn" onclick="press('9')">9</button>
+      <button class="calcBtn" onclick="press('/')">/</button><br>
+      <button class="calcBtn" onclick="press('4')">4</button>
+      <button class="calcBtn" onclick="press('5')">5</button>
+      <button class="calcBtn" onclick="press('6')">6</button>
+      <button class="calcBtn" onclick="press('*')">*</button><br>
+      <button class="calcBtn" onclick="press('1')">1</button>
+      <button class="calcBtn" onclick="press('2')">2</button>
+      <button class="calcBtn" onclick="press('3')">3</button>
+      <button class="calcBtn" onclick="press('-')">-</button><br>
+      <button class="calcBtn" onclick="press('0')">0</button>
+      <button class="calcBtn" onclick="press('.')">.</button>
+      <button class="calcBtn" onclick="calcResult()">=</button>
+      <button class="calcBtn" onclick="press('+')">+</button>
+    </div>
+  </div>
+</div>
+
+<!-- Game Window -->
+<div class="window" id="gameWin">
+  <div class="titlebar">Game <button class="closeBtn" onclick="closeWindow('gameWin')">X</button></div>
+  <div class="content">
+    <canvas id="gameCanvas" width="200" height="400"></canvas>
+  </div>
+</div>
+
+<!-- Terminal Window -->
+<div class="window" id="terminalWin">
+  <div class="titlebar">Terminal <button class="closeBtn" onclick="closeWindow('terminalWin')">X</button></div>
+  <div class="content">
+    <div id="terminalOutput"></div>
+    <input id="terminalInput" placeholder="Type JS code and press Enter">
+  </div>
+</div>
+
+<script>
+let device="pc";
+
+/* Boot screen logic */
+function bootOS(choice){
+  device=choice;
+  document.getElementById("bootScreen").style.display="none";
+  if(device==="mobile"){
+    document.body.style.zoom=window.innerWidth/800;
+  }
+}
+
+/* Start Menu */
+document.getElementById("startBtn").onclick = ()=>{ 
+  let menu = document.getElementById("startMenu"); 
+  menu.style.display = menu.style.display==="block"?"none":"block"; 
+};
+function openWindow(id){ 
+  document.getElementById(id).style.display="block"; 
+  document.getElementById("startMenu").style.display="none"; 
+}
+function closeWindow(id){ document.getElementById(id).style.display="none"; }
+
+/* Clock */
+setInterval(()=>{
+  let d=new Date();
+  document.getElementById("clock").innerText=d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+},1000);
+
+/* Drag Windows */
+let drag=null,offX=0,offY=0;
+document.addEventListener("mousedown",e=>{
+  if(e.target.classList.contains("titlebar")){ drag=e.target.parentElement; offX=e.clientX-drag.offsetLeft; offY=e.clientY-drag.offsetTop; }
+});
+document.addEventListener("mousemove",e=>{ if(drag){ drag.style.left=(e.clientX-offX)+"px"; drag.style.top=(e.clientY-offY)+"px"; } });
+document.addEventListener("mouseup",()=>drag=null);
+
+/* Paint */
+let brush="draw";
+let canvas=document.getElementById("paintCanvas");
+let ctx=canvas.getContext("2d");
+let painting=false;
+canvas.onmousedown=()=>{painting=true;}
+canvas.onmouseup=()=>{painting=false;}
+canvas.onmousemove=e=>{
+  if(!painting) return;
+  ctx.fillStyle=document.getElementById("paintColor").value;
+  let size=parseInt(document.getElementById("brushSize").value);
+  if(brush==="draw"){ ctx.fillRect(e.offsetX,e.offsetY,size,size); }
+};
+canvas.onclick=()=>{ if(brush==="bucket"){ ctx.fillStyle=document.getElementById("paintColor").value; ctx.fillRect(0,0,canvas.width,canvas.height); } }
+
+/* Notepad */
+function downloadNote(){
+  let text=document.getElementById("notepadText").value;
+  let blob=new Blob([text],{type:"text/plain"});
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="note.txt";
+  a.click();
+}
+
+/* Calculator */
+function press(val){ document.getElementById("calcDisplay").value+=val; }
+function calcResult(){ 
+  try{ document.getElementById("calcDisplay").value=eval(document.getElementById("calcDisplay").value); } 
+  catch{ document.getElementById("calcDisplay").value="Error"; } 
+}
+
+/* Game placeholder */
+let gCanvas=document.getElementById("gameCanvas");
+let gCtx=gCanvas.getContext("2d");
+gCtx.fillStyle="#0ff"; gCtx.fillRect(50,50,100,100);
+
+/* Terminal */
+let termInput=document.getElementById("terminalInput");
+let termOutput=document.getElementById("terminalOutput");
+termInput.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){
+    let code=termInput.value;
+    try{
+      let res=eval(code);
+      termOutput.innerHTML+="&gt; "+code+"<br>"+res+"<br>";
+    }catch(err){ termOutput.innerHTML+="&gt; "+code+"<br>Error: "+err+"<br>"; }
+    termOutput.scrollTop=termOutput.scrollHeight;
+    termInput.value="";
+  }
+});
+</script>
+</body>
+</html>
